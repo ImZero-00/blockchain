@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ProductListPage from './pages/ProductListPage';
 import CheckoutPage from './pages/CheckoutPage';
+import CheckoutPageMetaMask from './pages/CheckoutPageMetaMask';
 import VerifyOrderPage from './pages/VerifyOrderPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -20,6 +21,7 @@ function App() {
         <Routes>
           <Route path="/" element={<ProductListPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/checkout-metamask" element={<CheckoutPageMetaMask />} />
           <Route path="/verify" element={<VerifyOrderPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

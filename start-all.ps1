@@ -9,6 +9,13 @@ $blockchainPath = "c:\Users\Admin\Documents\Blockchain\blockchain"
 $backendPath = "c:\Users\Admin\Documents\Blockchain\backend"
 $frontendPath = "c:\Users\Admin\Documents\Blockchain\frontend"
 
+# DEBUG: show the paths and whether they exist (helps diagnose exit 1)
+Write-Host "[DEBUG] blockchainPath = '$blockchainPath'" -ForegroundColor DarkGray
+Write-Host "[DEBUG] Test-Path blockchainPath => $(Test-Path $blockchainPath)" -ForegroundColor DarkGray
+Write-Host "[DEBUG] backendPath = '$backendPath'" -ForegroundColor DarkGray
+Write-Host "[DEBUG] Test-Path backendPath  => $(Test-Path $backendPath)" -ForegroundColor DarkGray
+Write-Host "[DEBUG] frontendPath = '$frontendPath'" -ForegroundColor DarkGray
+Write-Host "[DEBUG] Test-Path frontendPath => $(Test-Path $frontendPath)" -ForegroundColor DarkGray
 if (-not (Test-Path $blockchainPath)) {
     Write-Host "❌ Không tìm thấy thư mục blockchain!" -ForegroundColor Red
     exit 1

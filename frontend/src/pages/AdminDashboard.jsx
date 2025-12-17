@@ -32,12 +32,15 @@ function AdminDashboard() {
       try {
         setLoading(true);
         const response = await getAllOrders();
+        console.log('getAllOrders response:', response);
         if (response.success) {
-          setOrders(response.data.orders);
+          // Backend trả về data là array trực tiếp
+          setOrders(response.data || []);
         } else {
           setError('Không thể tải danh sách đơn hàng');
         }
       } catch (err) {
+        console.error('Error fetching orders:', err);
         setError(err.message || 'Lỗi khi tải dữ liệu');
       } finally {
         setLoading(false);

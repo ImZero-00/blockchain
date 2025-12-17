@@ -1,0 +1,19 @@
+{
+  "name": "blockchain-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Root helper scripts to start the blockchain, backend and frontend concurrently",
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "wait-on": "^7.0.1"
+  },
+  "scripts": {
+    "start:hardhat": "npm --prefix blockchain run node",
+    "start:deploy": "npm --prefix blockchain run deploy",
+    "wait-for-hardhat": "wait-on tcp:127.0.0.1:8545",
+    "start:backend": "npm --prefix backend run start",
+    "start:frontend": "npm --prefix frontend run dev",
+    "wait-and-deploy": "npm run wait-for-hardhat && npm run start:deploy",
+    "start": "concurrently -k \"npm run start:hardhat\" \"npm run wait-and-deploy\" \"npm run start:backend\" \"npm run start:frontend\""
+  }
+}

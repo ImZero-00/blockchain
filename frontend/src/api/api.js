@@ -189,3 +189,16 @@ export const getBlockchainOrders = async () => {
     throw error;
   }
 };
+
+/**
+ * Lưu order đã ký qua MetaMask vào database (không cần backend ký)
+ */
+export const saveOrderToDatabase = async (orderData) => {
+  try {
+    const response = await apiClient.post('/orders/save-signed', orderData);
+    return response.data;
+  } catch (error) {
+    console.error('Error saving order to database:', error);
+    throw error.response?.data || error;
+  }
+};

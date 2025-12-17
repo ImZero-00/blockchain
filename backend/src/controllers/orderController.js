@@ -15,8 +15,12 @@ export const createOrder = async (req, res) => {
     const { orderId, productId, quantity, price } = req.body;
     const user = req.user; // Từ authMiddleware
 
+    console.log('📦 createOrder được gọi với body:', req.body);
+    console.log('👤 User:', user ? { id: user.id, email: user.email, wallet: user.walletAddress } : 'null');
+
     // Kiểm tra user đã khai báo ví chưa
     if (!user.walletAddress) {
+      console.log('❌ User chưa có walletAddress');
       return res.status(400).json({
         success: false,
         message: 'Bạn phải khai báo địa chỉ ví trước khi đặt hàng'
@@ -278,6 +282,14 @@ export const getAllOrders = async (req, res) => {
     const orders = await prisma.order.findMany({
       orderBy: {
         createdAt: 'desc'
+      },
+      include: {
+        user: {
+          select: {
+            fullName: true,
+            email: true
+          }
+        }
       }
     });
 
@@ -286,6 +298,8 @@ export const getAllOrders = async (req, res) => {
       count: orders.length,
       data: orders.map(order => ({
         ...order,
+        customerName: order.user?.fullName || 'Unknown',
+        customerEmail: order.user?.email,
         amountInEth: ethers.formatEther(order.amount)
       }))
     });
@@ -329,6 +343,106 @@ export const getOrderById = async (req, res) => {
 
   } catch (error) {
     console.error('❌ Lỗi trong getOrderById:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * POST /orders/save-signed
+ * Lưu đơn hàng đã được ký qua MetaMask vào database
+ * (Không cần backend ký - user đã ký trực tiếp)
+ */
+export const saveSignedOrder = async (req, res) => {
+  try {
+    const { 
+      orderId, 
+      productId, 
+      productName, 
+      quantity, 
+      amount, 
+      buyerAddress, 
+      transactionHash, 
+      blockNumber, 
+      dataHash,
+      gasUsed 
+    } = req.body;
+    const user = req.user;
+
+    // Validate required fields
+    if (!orderId || !productId || !transactionHash || !buyerAddress) {
+      return res.status(400).json({
+        success: false,
+        message: 'Thiếu thông tin bắt buộc'
+      });
+    }
+
+    // Kiểm tra orderId đã tồn tại chưa
+    const existingOrder = await prisma.order.findUnique({
+      where: { orderId }
+    });
+
+    if (existingOrder) {
+      return res.status(400).json({
+        success: false,
+        message: 'Order ID đã tồn tại trong database'
+      });
+    }
+
+    // Verify transaction hash on blockchain (optional - để đảm bảo tx thực sự tồn tại)
+    console.log(`📝 Lưu đơn hàng đã ký bởi user: ${orderId}`);
+    console.log(`   Transaction: ${transactionHash}`);
+    console.log(`   Buyer: ${buyerAddress}`);
+    console.log(`   Signed by: USER (MetaMask)`);
+
+    // Lưu vào database
+    const order = await prisma.order.create({
+      data: {
+        orderId,
+        productId,
+        productName: productName || 'Unknown Product',
+        quantity: parseInt(quantity) || 1,
+        amount: amount.toString(),
+        buyerAddress,
+        transactionHash,
+        blockNumber: parseInt(blockNumber) || 0,
+        dataHash: dataHash || '',
+        status: 'confirmed',
+        userId: user.id
+      },
+      include: {
+        user: true
+      }
+    });
+
+    console.log(`✅ Đã lưu đơn hàng ${orderId} (ký bởi user qua MetaMask)`);
+
+    res.status(201).json({
+      success: true,
+      message: 'Đơn hàng đã được lưu (giao dịch ký bởi user)',
+      data: {
+        orderId: order.orderId,
+        customerName: order.user.fullName,
+        productName: order.productName,
+        quantity: order.quantity,
+        amount: order.amount,
+        amountInEth: ethers.formatEther(order.amount),
+        transactionHash: order.transactionHash,
+        blockNumber: order.blockNumber,
+        buyerAddress: order.buyerAddress,
+        dataHash: order.dataHash,
+        gasUsed,
+        status: order.status,
+        signedBy: 'USER (MetaMask)',
+        createdAt: order.createdAt
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Lỗi trong saveSignedOrder:', error);
     res.status(500).json({
       success: false,
       message: 'Lỗi server',

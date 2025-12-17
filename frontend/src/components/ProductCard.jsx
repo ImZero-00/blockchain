@@ -10,6 +10,10 @@ function ProductCard({ product }) {
     navigate('/checkout', { state: { product } });
   };
 
+  const handleMetaMaskOrderClick = () => {
+    navigate('/checkout-metamask', { state: { product } });
+  };
+
   return (
     <div className="product-card">
       <img 
@@ -22,13 +26,25 @@ function ProductCard({ product }) {
         <p className="product-description">{product.description}</p>
         <div className="product-price">{product.price} ETH</div>
         <div className="product-stock">Còn lại: {product.stock} sản phẩm</div>
-        <button 
-          className="btn btn-primary" 
-          onClick={handleOrderClick}
-          disabled={product.stock === 0}
-        >
-          {product.stock > 0 ? '🛒 Đặt hàng' : 'Hết hàng'}
-        </button>
+        <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
+          <button 
+            className="btn btn-primary" 
+            onClick={handleOrderClick}
+            disabled={product.stock === 0}
+            title="Backend ký giao dịch"
+          >
+            {product.stock > 0 ? '🛒 Đặt hàng' : 'Hết hàng'}
+          </button>
+          <button 
+            className="btn btn-success" 
+            onClick={handleMetaMaskOrderClick}
+            disabled={product.stock === 0}
+            title="Bạn tự ký qua MetaMask"
+            style={{fontSize: '14px'}}
+          >
+            🦊 MetaMask
+          </button>
+        </div>
       </div>
     </div>
   );
